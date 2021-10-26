@@ -1,2 +1,2 @@
-opencv_python==opencv-python-headless
+opencv_python==4.5.3.56
 streamlit==1.1.0
