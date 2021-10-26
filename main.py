@@ -195,4 +195,4 @@ def maskDetector():
             "Select transform type", ("noop", "cartoon", "edges", "rotate")
         )
 
-maskDetector()
+model()
