@@ -166,19 +166,19 @@ def maskDetector():
             self.type = "noop"
 
         def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-            frame = frame.to_ndarray(format="bgr24")
+            img = frame.to_ndarray(format="bgr24")
 
             if self.type == "noop":
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
                 nose = noseCascade.detectMultiScale(gray, 1.3, 5)
                 mouth = mouthCascade.detectMultiScale(gray, 1.3, 5)
 
                 if len(nose) != 0 and len(mouth) != 0:
-                    cv2.putText(frame, "No Mask!", (100, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 2
+                    cv2.putText(img, "No Mask!", (100, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 2
 
 
-            return av.VideoFrame.from_ndarray(frame, format="bgr24")
+            return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 
     webrtc_ctx = webrtc_streamer(
