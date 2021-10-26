@@ -73,7 +73,7 @@ stopCamera = st.button("Stop Mask Detection", key="2")
 
 if startCamera:
     st.success("Turning on!")
-    detectMask()
+    webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
 
 if stopCamera:
     cv2.destroyAllWindows()
