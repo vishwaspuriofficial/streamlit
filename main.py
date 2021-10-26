@@ -86,7 +86,10 @@ from streamlit_webrtc import (
     WebRtcMode,
     webrtc_streamer,
 )
-from typing import Literal
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal  # type: ignore
 import av
 
 RTC_CONFIGURATION = RTCConfiguration(
