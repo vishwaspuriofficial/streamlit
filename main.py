@@ -1,11 +1,11 @@
 import streamlit as st
 import cv2
 import os
-from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
+from streamlit_webrtc import VideoProcessorBase, webrtc_streamer
 
 noseCascade = cv2.CascadeClassifier("haarcascade_mcs_nose.xml")
 mouthCascade = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
-class VideoTransformer(VideoTransformerBase):
+class VideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.i = 0
 
@@ -73,7 +73,7 @@ stopCamera = st.button("Stop Mask Detection", key="2")
 
 if startCamera:
     st.success("Turning on!")
-    webrtc_streamer(key="example", video_processor_factory=VideoTransformer)
+    webrtc_streamer(key="example", video_processor_factory=VideoProcessor)
 
 if stopCamera:
     cv2.destroyAllWindows()
