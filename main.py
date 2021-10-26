@@ -77,29 +77,76 @@
 #
 # if stopCamera:
 #     cv2.destroyAllWindows()
-
+import streamlit as st
 import cv2
-from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
+from streamlit_webrtc import (
+    AudioProcessorBase,
+    RTCConfiguration,
+    VideoProcessorBase,
+    WebRtcMode,
+    webrtc_streamer,
+)
+from typing import Literal
+import av
 
-faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+)
 
+class OpenCVVideoProcessor(VideoProcessorBase):
+    type: Literal["noop", "cartoon", "edges", "rotate"]
 
-class VideoTransformer(VideoTransformerBase):
-    def __init__(self):
-        self.i = 0
+    def __init__(self) -> None:
+        self.type = "noop"
 
-    def transform(self, frame):
+    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         img = frame.to_ndarray(format="bgr24")
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = faceCascade.detectMultiScale(gray, 1.3, 5)
-        i =self.i+1
-        for (x, y, w, h) in faces:
-            cv2.rectangle(img, (x, y), (x + w, y + h), (95, 207, 30), 3)
-            cv2.rectangle(img, (x, y - 40), (x + w, y), (95, 207, 30), -1)
-            cv2.putText(img, 'F-' + str(i), (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
 
-        return img
+        if self.type == "noop":
+            pass
+        elif self.type == "cartoon":
+            # prepare color
+            img_color = cv2.pyrDown(cv2.pyrDown(img))
+            for _ in range(6):
+                img_color = cv2.bilateralFilter(img_color, 9, 9, 7)
+            img_color = cv2.pyrUp(cv2.pyrUp(img_color))
 
-webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
+            # prepare edges
+            img_edges = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+            img_edges = cv2.adaptiveThreshold(
+                cv2.medianBlur(img_edges, 7),
+                255,
+                cv2.ADAPTIVE_THRESH_MEAN_C,
+                cv2.THRESH_BINARY,
+                9,
+                2,
+            )
+            img_edges = cv2.cvtColor(img_edges, cv2.COLOR_GRAY2RGB)
+
+            # combine color and edges
+            img = cv2.bitwise_and(img_color, img_edges)
+        elif self.type == "edges":
+            # perform edge detection
+            img = cv2.cvtColor(cv2.Canny(img, 100, 200), cv2.COLOR_GRAY2BGR)
+        elif self.type == "rotate":
+            # rotate image
+            rows, cols, _ = img.shape
+            M = cv2.getRotationMatrix2D((cols / 2, rows / 2), frame.time * 45, 1)
+            img = cv2.warpAffine(img, M, (cols, rows))
+
+        return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 
+webrtc_ctx = webrtc_streamer(
+    key="opencv-filter",
+    mode=WebRtcMode.SENDRECV,
+    rtc_configuration=RTC_CONFIGURATION,
+    video_processor_factory=OpenCVVideoProcessor,
+    media_stream_constraints={"video": True, "audio": False},
+    async_processing=True,
+)
+
+if webrtc_ctx.video_processor:
+    webrtc_ctx.video_processor.type = st.radio(
+        "Select transform type", ("noop", "cartoon", "edges", "rotate")
+    )
