@@ -9,7 +9,7 @@ class VideoTransformer(VideoTransformerBase):
     def __init__(self):
         self.i = 0
 
-    def detectMask(self, frame):
+    def transform(self, frame):
     # Method 2: Write on Camera
 
 
