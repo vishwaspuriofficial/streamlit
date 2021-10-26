@@ -3,7 +3,8 @@
 # import os
 # from streamlit_webrtc import VideoProcessorBase, webrtc_streamer
 #
-
+# noseCascade = cv2.CascadeClassifier("haarcascade_mcs_nose.xml")
+# mouthCascade = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
 # class VideoProcessor(VideoProcessorBase):
 #     def __init__(self):
 #         self.i = 0
@@ -92,11 +93,9 @@ except ImportError:
 import av
 
 RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urlss": ["stun:stun.l.google.com:19302"]}]}
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
 )
 
-
-# def model():
 class OpenCVVideoProcessor(VideoProcessorBase):
     type: Literal["noop", "cartoon", "edges", "rotate"]
 
@@ -155,42 +154,4 @@ if webrtc_ctx.video_processor:
         "Select transform type", ("noop", "cartoon", "edges", "rotate")
     )
 
-# def maskDetector():
-noseCascade = cv2.CascadeClassifier("haarcascade_mcs_nose.xml")
-mouthCascade = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
-
-# class OpenCVVideoProcessor(VideoProcessorBase):
-#     type: Literal["noop", "cartoon", "edges", "rotate"]
-#
-#     def __init__(self) -> None:
-#         self.type = "noop"
-#
-#     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-#         img = frame.to_ndarray(format="bgr24")
-#
-#         if self.type == "noop":
-#             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-#
-#             nose = noseCascade.detectMultiScale(gray, 1.3, 5)
-#             mouth = mouthCascade.detectMultiScale(gray, 1.3, 5)
-#
-#             if len(nose) != 0 and len(mouth) != 0:
-#                 cv2.putText(img, "No Mask!", (100, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 2
-#
-#
-#         return av.VideoFrame.from_ndarray(img, format="bgr24")
-#
-#
-# webrtc_ctx = webrtc_streamer(
-#     key="opencv-filter",
-#     mode=WebRtcMode.SENDRECV,
-#     rtc_configuration=RTC_CONFIGURATION,
-#     video_processor_factory=OpenCVVideoProcessor,
-#     media_stream_constraints={"video": True, "audio": False},
-#     async_processing=True,
-# )
-#
-# if webrtc_ctx.video_processor:
-#     webrtc_ctx.video_processor.type = st.radio(
-#         "Select transform type", ("noop", "cartoon", "edges", "rotate")
-#     )
+    
